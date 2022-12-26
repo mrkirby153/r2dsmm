@@ -17,9 +17,18 @@ const colors = {
   [ButtonStyle.Danger]: "bg-red-500 hover:bg-red-600",
 };
 
+const disabledColors = {
+  [ButtonStyle.Primary]: "bg-blue-300 cursor-not-allowed",
+  [ButtonStyle.Secondary]: "bg-gray-300 cursor-not-allowed",
+  [ButtonStyle.Success]: "bg-green-300 cursor-not-allowed",
+  [ButtonStyle.Danger]: "bg-red-300 cursor-not-allowed",
+};
+
 export function Button(props: ButtonProps) {
-  const { className, buttonStyle, ...rest } = props;
-  const colorClass = colors[props.buttonStyle];
+  const { className, buttonStyle, disabled, ...rest } = props;
+  const colorClass = !disabled
+    ? colors[props.buttonStyle]
+    : disabledColors[props.buttonStyle];
   const actualClasses = `${className} py-2 px-4 text-white rounded ${colorClass}`;
-  return <button className={actualClasses} {...rest} />;
+  return <button className={actualClasses} disabled={disabled} {...rest} />;
 }

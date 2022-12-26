@@ -1,43 +1,41 @@
 import { Form } from "@remix-run/react";
-import React, { useState } from "react";
+import React from "react";
+import {
+  useField,
+  useFormContext,
+  useIsSubmitting,
+} from "remix-validated-form";
+import type { ButtonProps } from "./Button";
+import { Button } from "./Button";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  id: string;
-  error?: string | null | undefined;
+  name: string;
+  error?: string | undefined | null;
 }
 
-export function Input(props: InputProps) {
-  const { id, error, label, ...rest } = props;
-  const [displayErrors, setDisplayErrors] = useState(true);
-  const isError = error && displayErrors;
+export function Input({ label, name, error: propError, ...rest }: InputProps) {
+  const { error, getInputProps } = useField(name);
+  const displayError = error ? error : propError;
+
   const classes = `w-full rounded border ${
-    isError ? "border-red-500" : "border-gray-500"
+    error ? "border-red-500" : "border-gray-500"
   } px-2 py-1 text-lg`;
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
       </label>
       <div className="mt-1">
         <input
-          id={id}
           className={classes}
-          name={id}
-          {...rest}
-          onChange={(e) => {
-            setDisplayErrors(false);
-            if (props.onChange) {
-              props.onChange(e);
-            }
-          }}
+          name={name}
+          {...getInputProps({ ...rest })}
         />
-        {isError && (
-          <div className="pt-1 text-red-700" id={`${id}-error`}>
-            {error}
-          </div>
+        {displayError && (
+          <div className="pt-1 text-red-700">{displayError}</div>
         )}
       </div>
     </div>
@@ -50,4 +48,12 @@ export function LogoutForm(props: React.PropsWithChildren) {
       {props.children}
     </Form>
   );
+}
+
+export interface SubmitProps extends ButtonProps {}
+export function SubmitButton(props: SubmitProps) {
+  const isSubmitting = useIsSubmitting();
+  const { isValid } = useFormContext();
+  const disabled = isSubmitting || !isValid;
+  return <Button {...props} type="submit" disabled={disabled} />;
 }

@@ -1,12 +1,15 @@
-import { Form, useActionData, useSearchParams } from "@remix-run/react";
+import { useSearchParams } from "@remix-run/react";
 import type { LoaderArgs, ActionArgs } from "@remix-run/server-runtime";
 import { redirect, json } from "@remix-run/server-runtime";
 import { Input } from "~/components/FormInput";
 import { createUserSession, getUserId } from "~/session.server";
 import { Button, ButtonStyle } from "~/components/Button";
 import { Link } from "react-router-dom";
-import { safeRedirect, validateEmail } from "~/utils";
+import { manualValidationErrors, safeRedirect } from "~/utils";
 import { verifyLogin } from "~/models/user.server";
+import * as yup from "yup";
+import { withYup } from "@remix-validated-form/with-yup";
+import { ValidatedForm, validationError } from "remix-validated-form";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -14,45 +17,35 @@ export async function loader({ request }: LoaderArgs) {
   return json({});
 }
 
+const validator = withYup(
+  yup.object({
+    email: yup.string().email().label("Email").required(),
+    password: yup.string().min(8).label("Password").required(),
+  })
+);
+
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const remember = formData.get("remember");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
-  if (!validateEmail(email)) {
-    return json(
-      { errors: { email: "Email is invalid", password: null } },
-      { status: 400 }
-    );
+  const fieldValues = await validator.validate(formData);
+  const remember = formData.get("remember") === "on";
+  if (fieldValues.error) {
+    return validationError(fieldValues.error);
   }
+  const { email, password } = fieldValues.data;
 
-  if (typeof password !== "string" || password.length === 0) {
-    return json(
-      { errors: { email: null, password: "Password is required" } },
-      { status: 400 }
-    );
-  }
-
-  if (password.length < 8) {
-    return json(
-      { errors: { email: null, password: "Password is too short" } },
-      { status: 400 }
-    );
-  }
   const user = await verifyLogin(email, password);
 
   if (!user) {
-    return json(
-      { errors: { email: "Invalid email or password", password: null } },
-      { status: 400 }
-    );
+    return manualValidationErrors({
+      email: "Invalid email or password",
+    });
   }
 
   return createUserSession({
     request,
     userId: user.id,
-    remember: remember === "on" ? true : false,
+    remember: remember === true,
     redirectTo,
   });
 }
@@ -60,25 +53,21 @@ export async function action({ request }: ActionArgs) {
 export default function Login() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/";
-  const actionData = useActionData<typeof action>();
-
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md rounded border border-gray-200 px-8 py-8">
         <h1 className="mb-4 text-2xl font-bold">Login</h1>
-        <Form method="post" className="space-y-6">
+        <ValidatedForm
+          method="post"
+          className="space-y-6"
+          validator={validator}
+        >
           <Input
             label="Email"
-            id="email"
+            name="email"
             placeholder="username@example.com"
-            error={actionData?.errors?.email}
           />
-          <Input
-            label="Password"
-            id="password"
-            type="password"
-            error={actionData?.errors?.password}
-          />
+          <Input label="Password" name="password" type="password" />
           <input
             type="hidden"
             id="redirectTo"
@@ -109,7 +98,7 @@ export default function Login() {
               Create One
             </Link>
           </div>
-        </Form>
+        </ValidatedForm>
       </div>
     </div>
   );

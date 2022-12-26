@@ -1,5 +1,8 @@
 import { useMatches } from "@remix-run/react";
+import type { TypedResponse } from "@remix-run/server-runtime";
 import { useMemo } from "react";
+import type { ValidationErrorResponseData } from "remix-validated-form";
+import { validationError } from "remix-validated-form";
 
 import type { User } from "~/models/user.server";
 
@@ -68,4 +71,12 @@ export function useUser(): User {
 
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
+}
+
+export function manualValidationErrors(
+  errors: Record<string, string>
+): TypedResponse<ValidationErrorResponseData> {
+  return validationError({
+    fieldErrors: errors,
+  });
 }

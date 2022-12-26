@@ -1,71 +1,42 @@
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import { Link, useSearchParams } from "@remix-run/react";
 
-import { Input } from "~/components/FormInput";
-import { Button, ButtonStyle } from "~/components/Button";
-import { safeRedirect, validateEmail } from "~/utils";
+import { Input, SubmitButton } from "~/components/FormInput";
+import { ButtonStyle } from "~/components/Button";
+import { manualValidationErrors, safeRedirect } from "~/utils";
 import type { ActionArgs, MetaFunction } from "@remix-run/server-runtime";
-import { json } from "@remix-run/server-runtime";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { createUserSession } from "~/session.server";
+import { withYup } from "@remix-validated-form/with-yup";
+import * as yup from "yup";
+import { ValidatedForm, validationError } from "remix-validated-form";
+
+const validator = withYup(
+  yup.object({
+    email: yup.string().email().label("Email").required(),
+    password: yup.string().min(8).label("Password").required(),
+    confirmPassword: yup
+      .string()
+      .oneOf([yup.ref("password")], "Passwords must match")
+      .label("Confirm Password")
+      .required(),
+  })
+);
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const confirmPassword = formData.get("confirmPassword");
   const redirectTo = safeRedirect(formData.get("redirectTo") || "/");
 
-  if (!validateEmail(email)) {
-    return json(
-      {
-        errors: {
-          email: "Email is invalid",
-          password: null,
-          confirmPassword: null,
-        },
-      },
-      { status: 400 }
-    );
+  const fieldValues = await validator.validate(formData);
+  if (fieldValues.error) {
+    return validationError(fieldValues.error);
   }
-
-  if (typeof password !== "string" || password.length == 0) {
-    return json(
-      {
-        errors: {
-          email: null,
-          password: "Password is required",
-          confirmPassword: null,
-        },
-      },
-      { status: 400 }
-    );
-  }
-
-  if (password !== confirmPassword) {
-    return json(
-      {
-        errors: {
-          email: null,
-          password: null,
-          confirmPassword: "Passwords do not match",
-        },
-      },
-      { status: 400 }
-    );
-  }
+  const { email, password } = fieldValues.data;
 
   const existing = await getUserByEmail(email);
   if (existing) {
-    return json(
-      {
-        errors: {
-          password: null,
-          email: "Email is already in use",
-          confirmPassword: null,
-        },
-      },
-      { status: 400 }
-    );
+    return manualValidationErrors({
+      email: "Email is already in use",
+    });
   }
   const user = await createUser(email, password);
   return createUserSession({
@@ -85,30 +56,26 @@ export const meta: MetaFunction = () => {
 export default function Register() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/";
-  const actionData = useActionData<typeof action>();
 
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md rounded border border-gray-200 px-8 py-8">
         <h1 className="mb-4 text-2xl font-bold">Register</h1>
-        <Form method="post" className="space-y-6">
+        <ValidatedForm
+          method="post"
+          className="space-y-6"
+          validator={validator}
+        >
           <Input
             label="Email"
-            id="email"
+            name="email"
             placeholder="username@example.com"
-            error={actionData?.errors?.email}
           />
-          <Input
-            label="Password"
-            id="password"
-            type="password"
-            error={actionData?.errors?.password}
-          />
+          <Input label="Password" name="password" type="password" />
           <Input
             label="Confirm Password"
-            id="confirmPassword"
+            name="confirmPassword"
             type="password"
-            error={actionData?.errors?.confirmPassword}
           />
           <input
             type="hidden"
@@ -116,7 +83,9 @@ export default function Register() {
             name="redirectTo"
             value={redirectTo}
           />
-          <Button buttonStyle={ButtonStyle.Primary}>Register</Button>
+          <SubmitButton buttonStyle={ButtonStyle.Primary}>
+            Register
+          </SubmitButton>
           <div className="text-center text-sm">
             Already have an account?{" "}
             <Link
@@ -126,7 +95,7 @@ export default function Register() {
               Log In
             </Link>
           </div>
-        </Form>
+        </ValidatedForm>
       </div>
     </div>
   );
