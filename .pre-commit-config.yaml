@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier
+        entry: npx prettier --write
+        language: system
+        files: \.(js|jsx|ts|tsx|css|scss|less|json|graphql|md|mdx|html|yml|yaml)$
+        types: [file, text]
+      - id: eslint
+        name: ESLint
+        entry: npx eslint --cache --cache-location ./node_modules/.cache/eslint --max-warnings=0 --fix
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        types: [file, text]
