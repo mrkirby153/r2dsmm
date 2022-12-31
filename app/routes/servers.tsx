@@ -67,10 +67,14 @@ function Server({ id, name, gameMode }: ServerProps) {
         <FaEllipsisV />
       </div>
       <div className={popoverShow ? "" : "hidden"}>
-        <div className="absolute w-[100%] h-[100%] left-0 top-0 z-0 pointer-events-auto" onClick={closePopover}/>
+        <div
+          className="pointer-events-auto absolute left-0 top-0 z-0 h-[100%] w-[100%]"
+          onClick={closePopover}
+        />
         <div
           ref={popoverRef}
-          className={"rounded-md border border-solid border-gray-300 bg-white px-0 z-5"
+          className={
+            "z-5 rounded-md border border-solid border-gray-300 bg-white px-0"
           }
         >
           <Link to={`/server/${id}/delete`}>

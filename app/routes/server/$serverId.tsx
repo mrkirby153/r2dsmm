@@ -1,14 +1,7 @@
-import {
-  Link,
-  Outlet,
-  useLoaderData,
-  useMatches,
-  useSearchParams,
-} from "@remix-run/react";
+import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import type { LoaderArgs, MetaFunction } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import { getServer } from "~/models/servers.server";
-import { Fragment } from "react";
 
 export const loader = async ({ params }: LoaderArgs) => {
   invariant(params.serverId, "Server ID should be set");
@@ -46,22 +39,29 @@ const links: LinkProps[] = [
 ];
 
 function Navbar() {
-  const matches = useMatches();
-  const { pathname } = matches[matches.length - 1];
   const elements = links.map((link) => {
     const path = link.href.substring(1);
-    const active = pathname.endsWith(link.href);
+
+    const renderStyles = ({
+      isActive,
+    }: {
+      isActive: boolean;
+      isPending: boolean;
+    }) => {
+      let styles =
+        "block border-l-2 px-2 pb-1 transition sm:inline-block sm:border-b-2 sm:border-l-0 sm:ml-2 first:ml-0";
+      if (isActive) {
+        styles += " border-blue-500 font-medium";
+      } else {
+        styles += " hover:border-blue-200";
+      }
+      return styles;
+    };
+
     return (
-      <Link
-        key={link.href}
-        to={path}
-        className={
-          (active ? "border-blue-500 font-medium " : "hover:border-blue-200 ") +
-          "block border-l-2 px-2 pb-1 transition sm:inline-block sm:border-b-2 sm:border-l-0 sm:ml-2 first:ml-0"
-        }
-      >
+      <NavLink key={link.href} to={path} className={renderStyles} end>
         <li>{link.name}</li>
-      </Link>
+      </NavLink>
     );
   });
 

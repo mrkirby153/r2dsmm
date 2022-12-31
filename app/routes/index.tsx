@@ -17,8 +17,18 @@ function LoginButtons() {
   } else {
     return (
       <>
-        <Link to={"/register"} className="ml-3 rounded bg-blue-500 py-2 px-4 text-center text-white hover:bg-blue-600">Register</Link>
-        <Link to={"/login"} className="ml-3 rounded bg-green-500 py-2 px-4 text-center text-white hover:bg-green-600">Login</Link>
+        <Link
+          to={"/register"}
+          className="ml-3 rounded bg-blue-500 py-2 px-4 text-center text-white hover:bg-blue-600"
+        >
+          Register
+        </Link>
+        <Link
+          to={"/login"}
+          className="ml-3 rounded bg-green-500 py-2 px-4 text-center text-white hover:bg-green-600"
+        >
+          Login
+        </Link>
       </>
     );
   }
