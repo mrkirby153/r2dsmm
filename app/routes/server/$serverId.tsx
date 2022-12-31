@@ -1,15 +1,11 @@
 import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import type { LoaderArgs, MetaFunction } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
-import { getServer } from "~/models/servers.server";
+import { verifyCanAccessServer } from "~/auth/utils.server";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
   invariant(params.serverId, "Server ID should be set");
-  const server = await getServer(params.serverId);
-  if (!server) {
-    throw new Response("Not Found", { status: 404, statusText: "Not Found" });
-  }
-  return server;
+  return await verifyCanAccessServer(params.serverId, request);
 };
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
