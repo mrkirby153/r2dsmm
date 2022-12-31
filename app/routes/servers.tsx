@@ -53,7 +53,7 @@ function Server({ id, name, gameMode }: ServerProps) {
       key={id}
       className="flex border-b border-solid border-gray-200 px-3 py-3"
     >
-      <Link className="" to={`/servers/${id}`}>
+      <Link className="" to={`/server/${id}`}>
         {name}
       </Link>
       <div className="ml-3 max-h-max self-center text-xs italic text-gray-500">
@@ -66,18 +66,19 @@ function Server({ id, name, gameMode }: ServerProps) {
       >
         <FaEllipsisV />
       </div>
-      <div
-        ref={popoverRef}
-        className={
-          (popoverShow ? "" : "hidden ") +
-          "rounded-md border border-solid border-gray-300 bg-white px-0"
-        }
-      >
-        <Link to={`/servers/${id}/delete`}>
-          <div className="cursor-pointer px-3 py-1 text-red-500 hover:bg-gray-200">
-            <FaTrash className="inline" /> Delete
-          </div>
-        </Link>
+      <div className={popoverShow ? "" : "hidden"}>
+        <div className="absolute w-[100%] h-[100%] left-0 top-0 z-0 pointer-events-auto" onClick={closePopover}/>
+        <div
+          ref={popoverRef}
+          className={"rounded-md border border-solid border-gray-300 bg-white px-0 z-5"
+          }
+        >
+          <Link to={`/server/${id}/delete`}>
+            <div className="cursor-pointer px-3 py-1 text-red-500 hover:bg-gray-200">
+              <FaTrash className="inline" /> Delete
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -106,7 +107,7 @@ export default function Servers() {
         <div className="mt-3 mb-3">{serverComponents}</div>
         <Link
           to={"create"}
-          className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 inline-block"
+          className="inline-block rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600"
         >
           Create
         </Link>

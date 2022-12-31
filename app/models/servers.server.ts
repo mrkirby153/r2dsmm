@@ -9,3 +9,9 @@ export async function getServersForUser(user: User) {
     activeProfile: true
   } });
 }
+
+export async function getServer(id: string) {
+  return prisma.server.findFirst({ where: { id }, include: {
+    activeProfile: true
+  }});
+}
