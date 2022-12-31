@@ -49,7 +49,7 @@ function Navbar() {
       isPending: boolean;
     }) => {
       let styles =
-        "block border-l-2 px-2 pb-1 transition sm:inline-block sm:border-b-2 sm:border-l-0 sm:ml-2 first:ml-0";
+        "block border-l-2 px-2 pb-1 transition sm:inline-block sm:border-b-2 sm:border-l-0";
       if (isActive) {
         styles += " border-blue-500 font-medium";
       } else {
@@ -59,14 +59,16 @@ function Navbar() {
     };
 
     return (
-      <NavLink key={link.href} to={path} className={renderStyles} end>
-        <li>{link.name}</li>
-      </NavLink>
+      <li key={link.href} className="inline first:ml-0 sm:ml-2">
+        <NavLink to={path} className={renderStyles} end>
+          {link.name}
+        </NavLink>
+      </li>
     );
   });
 
   return (
-    <nav className="mb-3">
+    <nav className="absolute left-3 float-left mb-3 sm:relative sm:left-0 sm:float-none">
       <ul>{elements}</ul>
     </nav>
   );
