@@ -51,12 +51,12 @@ function Server({ id, name, gameMode }: ServerProps) {
   return (
     <div
       key={id}
-      className="flex border-b border-solid border-gray-200 px-3 py-3"
+      className="group flex border-b border-solid border-gray-200 px-3 py-3"
     >
-      <Link className="" to={`/server/${id}`}>
+      <Link className="hover:underline" to={`/server/${id}`}>
         {name}
       </Link>
-      <div className="ml-3 max-h-max self-center text-xs italic text-gray-500">
+      <div className="ml-3 max-h-max cursor-default self-center text-xs italic text-gray-500 opacity-0 transition group-hover:opacity-100">
         {GAME_MODE_TRANSLATIONS[gameMode]}
       </div>
       <div
@@ -66,7 +66,7 @@ function Server({ id, name, gameMode }: ServerProps) {
       >
         <FaEllipsisV />
       </div>
-      <div className={popoverShow ? "" : "hidden"}>
+      <div className={popoverShow ? undefined : "hidden"}>
         <div
           className="pointer-events-auto absolute left-0 top-0 z-0 h-[100%] w-[100%]"
           onClick={closePopover}
