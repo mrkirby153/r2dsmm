@@ -30,6 +30,7 @@ export function Button(props: ButtonProps) {
     ? colors[props.buttonStyle]
     : disabledColors[props.buttonStyle];
   const actualClasses =
-    (className || "") + `py-2 px-4 text-white rounded ${colorClass}`;
+    (className || "") +
+    `py-2 px-4 text-white rounded ${colorClass} inline-block`;
   return <button className={actualClasses} disabled={disabled} {...rest} />;
 }

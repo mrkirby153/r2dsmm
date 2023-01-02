@@ -10,7 +10,7 @@ import { Button } from "./Button";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label: string | null;
   name: string;
   error?: string | undefined | null;
 }
@@ -25,9 +25,14 @@ export function Input({ label, name, error: propError, ...rest }: InputProps) {
 
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-        {label}
-      </label>
+      {label && (
+        <label
+          htmlFor={name}
+          className="block text-sm font-medium text-gray-700"
+        >
+          {label}
+        </label>
+      )}
       <div className="mt-1">
         <input
           className={classes}

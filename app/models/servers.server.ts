@@ -53,3 +53,9 @@ export async function createServer(
     profile,
   };
 }
+
+export async function deleteServer(id: string) {
+  return prisma.server.delete({
+    where: { id },
+  });
+}
