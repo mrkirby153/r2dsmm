@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import type { GameMode, User } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
@@ -20,4 +20,36 @@ export async function getServer(id: string) {
       activeProfile: true,
     },
   });
+}
+
+export async function createServer(
+  owner: User["id"],
+  name: string,
+  gameMode: GameMode
+) {
+  let server = await prisma.server.create({
+    data: {
+      name: name,
+      ownerId: owner,
+    },
+  });
+  const profile = await prisma.profile.create({
+    data: {
+      name: "Default",
+      serverId: server.id,
+      gameMode: gameMode,
+    },
+  });
+  server = await prisma.server.update({
+    where: {
+      id: server.id,
+    },
+    data: {
+      profileId: profile.id,
+    },
+  });
+  return {
+    server,
+    profile,
+  };
 }
